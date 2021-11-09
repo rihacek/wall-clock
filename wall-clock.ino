@@ -11,6 +11,8 @@ const int numberOfHorizontalDisplays = 4; // default 4 for standard 4 x 1 displa
 const int numberOfVerticalDisplays = 1; // default 1 for a single row height
 
 void setup() {
+  Serial.begin(115200);
+  
   Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
 
   // initialize display
@@ -22,16 +24,37 @@ void setup() {
     matrix.setPosition(i, maxPos - i - 1, 0);
   }
 
-  Serial.println("matrix created");
-  matrix.fillScreen(LOW); // show black
+  
+  matrix.fillScreen(LOW); 
 
-  matrix.setCursor(0, 0);
+  matrix.setCursor(0, 1);
   matrix.print("howdy");
   matrix.write();
-
 
 }
 
 void loop(){
+  int i = 0;
+  Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
 
+  matrix.setIntensity(0); // Use a value between 0 and 15 for brightness
+
+  int maxPos = numberOfHorizontalDisplays * numberOfVerticalDisplays;
+  for (int i = 0; i < maxPos; i++) {
+    matrix.setRotation(i, 3);
+    matrix.setPosition(i, maxPos - i - 1, 0);
+  }
+
+//simple scroll implementation
+  while (i < 32){
+    matrix.fillScreen(LOW); 
+    matrix.setCursor(i, 0);
+    matrix.print("howdy");
+    matrix.write();
+    delay(250);
+    i++;
+  }
+
+  //Serial.println("Hello World!"); 
+  delay(500);
 }
