@@ -1,9 +1,12 @@
 
 
-// Include the required Arduino libraries:
+// 8x32 Panel Output
 #include <SPI.h>
 #include <Adafruit_GFX.h> // --> https://github.com/adafruit/Adafruit-GFX-Library
 #include <Max72xxPanel.h> // --> https://github.com/markruys/arduino-Max72xxPanel
+
+// Wifi
+#include <ESP8266WiFi.h>
 
 const int pinCS = D6;
 int displayIntensity = 1;  //(This can be set from 0 - 15)
@@ -30,6 +33,19 @@ void setup() {
   matrix.setCursor(0, 1);
   matrix.print("howdy");
   matrix.write();
+
+  WiFi.begin("mookie", "rihaceks");
+
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  Serial.print("Connected, IP address: ");
+  Serial.println(WiFi.localIP());
 
 }
 
