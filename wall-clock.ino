@@ -74,19 +74,32 @@ void loop(){
 
   timeClient.update();
 
+  int hh = timeClient.getHours();
+  int mm = timeClient.getMinutes();
+  int ss = timeClient.getSeconds();
+
+  bool isPM = false;
+
+  if(hh > 12) {
+    hh=hh-12;
+    isPM = true;
+    }
+
   Serial.print(daysOfTheWeek[timeClient.getDay()]);
   Serial.print(", ");
-  Serial.print(timeClient.getHours());
+  Serial.print(hh);
   Serial.print(":");
-  Serial.print(timeClient.getMinutes());
+  Serial.print(mm);
   Serial.print(":");
-  Serial.println(timeClient.getSeconds());
+  Serial.println(ss);
   
-  disp_text = String(timeClient.getHours()) + ":" + String(timeClient.getMinutes());
+  disp_text = String(hh) + ":" + String(mm);
 
   matrix.fillScreen(LOW); 
-  matrix.setCursor(0, 1);
+  matrix.setCursor(0, 0);
+  if (isPM) { matrix.drawPixel(25,6,1); }
   matrix.print(disp_text);
+  //printToDisplay
   matrix.write();
 
   delay(1000);
