@@ -12,6 +12,11 @@ char pass[] = SECRET_PASS;
 #include <WiFiManager.h>
 #include <ESP8266WiFi.h>
 
+// Time
+#include <NTPClient.h>
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+const long utcOffsetInSeconds = -18000;
+WiFiUDP wifi_udp;
 
 const int pinCS = D6;
 int displayIntensity = 1;  //(This can be set from 0 - 15)
@@ -19,6 +24,10 @@ const int numberOfHorizontalDisplays = 4; // default 4 for standard 4 x 1 displa
 const int numberOfVerticalDisplays = 1; // default 1 for a single row height
 
 String display_text = "banana";
+String disp_text;
+
+NTPClient timeClient(wifi_udp, "pool.ntp.org", utcOffsetInSeconds);
+
 
 void setup() {
   Serial.begin(9600);
@@ -45,15 +54,9 @@ void setup() {
  //wifi begin
   WiFiManager wifiManager;
   wifiManager.autoConnect(ssid, pass);
-
-  //don't need these - WifiManager provides verbose in Serial
-  //Serial.write("Connected at ");
-  //Serial.println(WiFi.localIP().toString());  
  //wifi end
 
- //time begin
- //time end
-
+timeClient.begin();
 
 }
 
@@ -69,15 +72,22 @@ void loop(){
     matrix.setPosition(i, maxPos - i - 1, 0);
   }
 
-//simple scroll implementation
-  while (i < 32){
-    matrix.fillScreen(LOW); 
-    matrix.setCursor(i, 0);
-    matrix.print(display_text);
-    matrix.write();
-    delay(250);
-    i++;
-  }
+  timeClient.update();
 
-  delay(500);
+  Serial.print(daysOfTheWeek[timeClient.getDay()]);
+  Serial.print(", ");
+  Serial.print(timeClient.getHours());
+  Serial.print(":");
+  Serial.print(timeClient.getMinutes());
+  Serial.print(":");
+  Serial.println(timeClient.getSeconds());
+  
+  disp_text = String(timeClient.getHours()) + ":" + String(timeClient.getMinutes());
+
+  matrix.fillScreen(LOW); 
+  matrix.setCursor(0, 1);
+  matrix.print(disp_text);
+  matrix.write();
+
+  delay(1000);
 }
