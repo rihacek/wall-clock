@@ -1,12 +1,5 @@
-// secrets
-#include "arduino_secrets.h"
-char ssid[] = SECRET_SSID;
-char pass[] = SECRET_PASS;
-
-// 8x32 Panel Output
+// Serial Peripheral
 #include <SPI.h>
-#include <Adafruit_GFX.h> // --> https://github.com/adafruit/Adafruit-GFX-Library
-#include <Max72xxPanel.h> // --> https://github.com/markruys/arduino-Max72xxPanel
 
 // Wifi
 #include <WiFiManager.h>
@@ -14,64 +7,31 @@ char pass[] = SECRET_PASS;
 
 // Time
 #include <NTPClient.h>
+
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-const long utcOffsetInSeconds = -18000;
+const long utcOffsetInSeconds = -18000; //UTC -5.00 (-5 * 60 sec in min * 60 min in hr = -18000)
+
 WiFiUDP wifi_udp;
-
-const int pinCS = D6;
-int displayIntensity = 1;  //(This can be set from 0 - 15)
-const int numberOfHorizontalDisplays = 4; // default 4 for standard 4 x 1 display Max size of 16
-const int numberOfVerticalDisplays = 1; // default 1 for a single row height
-
-String display_text = "banana";
-String disp_text;
 
 NTPClient timeClient(wifi_udp, "pool.ntp.org", utcOffsetInSeconds);
 
+//LED
+#define boardLED D4
+#define extLED D2
 
 void setup() {
   Serial.begin(9600);
-    Serial.println();
-    Serial.println("Begin");
-    
-  // 8x32 display begin
-  Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
+  Serial.println();
   
-  matrix.setIntensity(0); // Use a value between 0 and 15 for brightness
+  WiFiManager wifiManager;  
+  wifiManager.autoConnect();
+  timeClient.begin();
 
-  int maxPos = numberOfHorizontalDisplays * numberOfVerticalDisplays;
-  for (int i = 0; i < maxPos; i++) {
-    matrix.setRotation(i, 3);
-    matrix.setPosition(i, maxPos - i - 1, 0);
-  }
- 
-  matrix.fillScreen(LOW); 
-  matrix.setCursor(0, 1);
-  matrix.print(display_text);
-  matrix.write();
-  // 8x32 display end
-
- //wifi begin
-  WiFiManager wifiManager;
-  wifiManager.autoConnect(ssid, pass);
- //wifi end
-
-timeClient.begin();
-
+  pinMode(boardLED, OUTPUT); 
+  pinMode(extLED, OUTPUT);
 }
 
 void loop(){
-  int i = 0;
-  Max72xxPanel matrix = Max72xxPanel(pinCS, numberOfHorizontalDisplays, numberOfVerticalDisplays);
-
-  matrix.setIntensity(0); // Use a value between 0 and 15 for brightness
-
-  int maxPos = numberOfHorizontalDisplays * numberOfVerticalDisplays;
-  for (int i = 0; i < maxPos; i++) {
-    matrix.setRotation(i, 3);
-    matrix.setPosition(i, maxPos - i - 1, 0);
-  }
-
   timeClient.update();
 
   int hh = timeClient.getHours();
@@ -93,14 +53,12 @@ void loop(){
   Serial.print(":");
   Serial.println(ss);
   
-  disp_text = String(hh) + ":" + String(mm);
+  //just confirm wiring
+  digitalWrite(boardLED, HIGH);
+  digitalWrite(extLED, HIGH);
+  delay(2500);
 
-  matrix.fillScreen(LOW); 
-  matrix.setCursor(0, 0);
-  if (isPM) { matrix.drawPixel(25,6,1); }
-  matrix.print(disp_text);
-  //printToDisplay
-  matrix.write();
-
-  delay(1000);
+  digitalWrite(boardLED, LOW);
+  digitalWrite(extLED, LOW);
+  delay(2500);
 }
